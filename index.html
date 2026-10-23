@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تطبيق الامتياز - Al-Emtiaz Academic Portal</title>
+    
+    <!-- الخطوط العربية الأصلية (Cairo, Amiri, Reem Kufi) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,700&family=Cairo:wght@400;600;700;800;900&family=Reem+Kufi:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- مكتبة Tailwind CSS مع إعدادات إخفاء التحذير وتثبيت الكونسول -->
+    <script>
+        // إخفاء تحذيرات الـ CDN في الكونسول تماماً
+        const originalConsoleWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+            originalConsoleWarn.apply(console, args);
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            suppressDeprecationWarnings: true,
+            theme: {
+                extend: {
+                    fontFamily: {
+                        amiri: ['Amiri', 'serif'],
+                        cairo: ['Cairo', 'sans-serif'],
+                        kufi: ['Reem Kufi', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            800: '#152542',
+                            900: '#0D1B34',
+                            950: '#070F1E',
+                        },
+                        gold: {
+                            400: '#F59E0B',
+                            500: '#D97706',
+                            600: '#B45309',
+                            700: '#92400E',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        #bgContainer {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.6s ease-in-out;
+            z-index: 0;
+        }
+
+        .bg-home {
+            background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(240, 244, 248, 0.45) 100%), 
+                              url('https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1200&auto=format&fit=crop');
+        }
+
+        .bg-search {
+            background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(226, 232, 240, 0.5) 100%), 
+                              url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop');
+        }
+
+        .bg-register {
+            background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(226, 232, 240, 0.5) 100%), 
+                              url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200&auto=format&fit=crop');
+        }
+
+        .bg-portal {
+            background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(241, 245, 249, 0.55) 100%), 
+                              url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1200&auto=format&fit=crop');
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 2px solid rgba(217, 119, 6, 0.4);
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 32px 0 rgba(13, 27, 52, 0.12);
+        }
+
+        .glass-button-primary {
+            background: linear-gradient(135deg, rgba(13, 27, 52, 0.95), rgba(21, 37, 66, 0.95));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(217, 119, 6, 0.5);
+        }
+
+        .glass-bar-gold {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(254, 243, 199, 0.92));
+            backdrop-filter: blur(16px);
+            border: 2px solid rgba(217, 119, 6, 0.7);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .active-touch:active {
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+<body class="h-full w-full relative font-cairo">
+
+    <div id="bgContainer" class="bg-home"></div>
+
+    <div class="relative z-10 w-full h-full flex flex-col justify-between max-w-md mx-auto shadow-2xl overflow-hidden">
+        
+        <!-- رأس الصفحة الأصلي والفاخر -->
+        <header class="glass-header px-4 py-3 flex items-center justify-between shrink-0 shadow-sm">
+            
+            <!-- 1. الجهة اليمين: زر القائمة الجانبية (☰) -->
+            <div class="flex items-center gap-2">
+                <button onclick="openSideMenu()" class="w-10 h-10 rounded-2xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md hover:bg-navy-800 transition-all border border-gold-500/30">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 2. الجهة اليسار: الشعار الفاخر واسم الامتياز بالخط الكوفي المعتمد -->
+            <div class="flex items-center gap-2.5">
+                <div class="text-left">
+                    <h1 class="font-kufi text-xl font-black text-navy-900 tracking-wide leading-none">الامـــتـيـاز</h1>
+                    <p class="font-amiri text-[10px] text-gold-700 font-extrabold mt-0.5 tracking-widest">Al-Emtiaz Academic</p>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-gold-600 via-gold-500 to-amber-300 flex items-center justify-center text-navy-950 shadow-md border-2 border-white shrink-0">
+                    <i class="fa-solid fa-crown text-xl"></i>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- جسم الواجهات المتغيرة -->
+        <main class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
+
+            <!-- الواجهة الأولى: شاشة البداية العامة -->
+            <section id="homeScreen" class="h-full flex flex-col justify-between space-y-4 py-1">
+                <div class="glass-card-light p-5 rounded-3xl text-center shadow-lg">
+                    <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-gold-500 to-gold-400 flex items-center justify-center text-navy-950 text-3xl shadow-md border-2 border-white">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <h2 class="font-amiri text-2xl font-bold text-navy-900 mb-1">بوابة التعليم والتنسيق الأكاديمي</h2>
+                    <p class="text-xs font-semibold text-slate-700 leading-relaxed font-cairo">
+                        المنصة اليمنية الموحدة للتنسيق والقبول في الجامعات، الكليات، المعاهد، والمدارس النموذجية.
+                    </p>
+                </div>
+
+                <div onclick="openCoordinationGate()" class="glass-bar-gold p-4 rounded-3xl shadow-xl cursor-pointer active-touch transition-all group hover:border-navy-900">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-13 h-13 rounded-2xl bg-navy-900 flex items-center justify-center text-gold-400 text-2xl shadow-md group-hover:scale-105 transition-transform">
+                                <i class="fa-solid fa-compass"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-kufi text-xl font-bold text-navy-900">بوابة التنسيق الموحد</h3>
+                                <p class="text-xs font-bold text-slate-700 font-cairo">اضغط لمستكشف الجهات والنسب والمفاضلة</p>
+                            </div>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-navy-900/10 flex items-center justify-center text-navy-900 group-hover:bg-navy-900 group-hover:text-gold-400 transition-colors">
+                            <i class="fa-solid fa-arrow-left text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card-light p-5 rounded-3xl shadow-lg">
+                    <div class="text-center mb-4">
+                        <h3 class="font-kufi text-lg font-bold text-navy-900">بوابة تسجيل الدخول</h3>
+                        <p class="text-xs font-semibold text-slate-600">اختر نوع حسابك للمتابعة إلى خدماتك الأكاديمية</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="openRoleModal()" class="w-full py-3.5 px-3 rounded-2xl font-bold text-xs text-navy-950 bg-white/90 border-2 border-navy-900 hover:bg-navy-900 hover:text-white transition-all active-touch shadow-md flex items-center justify-center gap-1.5 font-cairo">
+                            <i class="fa-solid fa-user-plus text-sm"></i>
+                            <span>تسجيل جديد</span>
+                        </button>
+                        <button onclick="openLoginDirect()" class="w-full py-3.5 px-3 rounded-2xl font-bold text-xs text-gold-400 glass-button-primary hover:opacity-95 transition-all active-touch shadow-md flex items-center justify-center gap-1.5 font-cairo">
+                            <i class="fa-solid fa-right-to-bracket text-sm text-gold-400"></i>
+                            <span>تسجيل الدخول</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- الواجهة الثانية: محرك بحث ودليل التنسيق الموحد -->
+            <section id="searchScreen" class="hidden h-full flex-col space-y-3">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="closeCoordinationGate()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <div class="text-center"><h2 class="font-kufi text-base font-bold text-navy-900">دليل التنسيق الموحد</h2><p class="text-[10px] text-slate-600 font-bold font-cairo">الجامعات والمعاهد والمدارس</p></div>
+                    <div class="w-10"></div>
+                </div>
+
+                <!-- تبويبات الأقسام الثلاثة (Tabs) -->
+                <div class="grid grid-cols-3 gap-1.5 glass-card-light p-1.5 rounded-2xl text-center text-xs font-bold font-cairo">
+                    <button id="tab-universities" onclick="switchCategoryTab('universities')" class="py-2 rounded-xl bg-navy-900 text-gold-400 shadow-sm transition-all active-touch">الجامعات</button>
+                    <button id="tab-institutes" onclick="switchCategoryTab('institutes')" class="py-2 rounded-xl text-navy-900 hover:bg-white/50 transition-all active-touch">المعاهد</button>
+                    <button id="tab-schools" onclick="switchCategoryTab('schools')" class="py-2 rounded-xl text-navy-900 hover:bg-white/50 transition-all active-touch">المدارس</button>
+                </div>
+
+                <div class="relative font-cairo">
+                    <input type="text" id="searchInput" onkeyup="filterUniversities()" placeholder="ابحث عن جهة أو تخصص..." class="w-full py-3 pr-11 pl-4 rounded-2xl glass-card-light text-xs font-bold text-navy-950 placeholder-slate-500 focus:outline-none border border-white shadow-md">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-navy-900 text-base"></i>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-2.5 no-scrollbar pr-0.5 font-cairo" id="uniList">
+                    
+                    <!-- 1. قسم الجامعات -->
+                    <div class="category-group" id="group-universities">
+                        <div onclick="openInstitutionDetails('university', 'جامعة تعز')" class="uni-card mb-2 glass-card-light p-3.5 rounded-2xl shadow-sm hover:border-gold-500 transition-all cursor-pointer active-touch flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center text-xl font-bold shadow-md border border-gold-500/30 shrink-0"><i class="fa-solid fa-university"></i></div>
+                                <div><h4 class="font-bold text-navy-950 text-xs font-cairo">جامعة تعز (Taiz University)</h4><p class="text-[11px] text-slate-700 font-amiri font-bold">هندسة، طِب بشري، أمن سيبراني</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-left text-xs text-gold-600 mr-1"></i>
+                        </div>
+
+                        <div onclick="openInstitutionDetails('university', 'جامعة صنعاء')" class="uni-card mb-2 glass-card-light p-3.5 rounded-2xl shadow-sm hover:border-gold-500 transition-all cursor-pointer active-touch flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center text-xl font-bold shadow-md border border-gold-500/30 shrink-0"><i class="fa-solid fa-graduation-cap"></i></div>
+                                <div><h4 class="font-bold text-navy-950 text-xs font-cairo">جامعة صنعاء</h4><p class="text-[11px] text-slate-700 font-amiri font-bold">حاسوب، طِب، بترول، لغات</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-left text-xs text-gold-600 mr-1"></i>
+                        </div>
+                    </div>
+
+                    <!-- 2. قسم المعاهد -->
+                    <div class="category-group hidden" id="group-institutes">
+                        <div onclick="openInstitutionDetails('institute', 'المعهد الفني والصناعي')" class="uni-card mb-2 glass-card-light p-3.5 rounded-2xl shadow-sm hover:border-gold-500 transition-all cursor-pointer active-touch flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center text-xl font-bold shadow-md border border-gold-500/30 shrink-0"><i class="fa-solid fa-microchip"></i></div>
+                                <div><h4 class="font-bold text-navy-950 text-xs font-cairo">المعهد الفني والصناعي</h4><p class="text-[11px] text-slate-700 font-amiri font-bold">دبلومات تقنية، شبكات، صيانة</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-left text-xs text-gold-600 mr-1"></i>
+                        </div>
+
+                        <div onclick="openInstitutionDetails('institute', 'المعهد الكندي للغات والتكنولوجيا')" class="uni-card mb-2 glass-card-light p-3.5 rounded-2xl shadow-sm hover:border-gold-500 transition-all cursor-pointer active-touch flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center text-xl font-bold shadow-md border border-gold-500/30 shrink-0"><i class="fa-solid fa-language"></i></div>
+                                <div><h4 class="font-bold text-navy-950 text-xs font-cairo">المعهد الكندي للغات والتكنولوجيا</h4><p class="text-[11px] text-slate-700 font-amiri font-bold">دبلوم إنجليزي، البرمجة والتطوير</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-left text-xs text-gold-600 mr-1"></i>
+                        </div>
+                    </div>
+
+                    <!-- 3. قسم المدارس -->
+                    <div class="category-group hidden" id="group-schools">
+                        <div onclick="openInstitutionDetails('school', 'مدارس المتفوقين النموذجية')" class="uni-card mb-2 glass-card-light p-3.5 rounded-2xl shadow-sm hover:border-gold-500 transition-all cursor-pointer active-touch flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center text-xl font-bold shadow-md border border-gold-500/30 shrink-0"><i class="fa-solid fa-school"></i></div>
+                                <div><h4 class="font-bold text-navy-950 text-xs font-cairo">مدارس المتفوقين النموذجية</h4><p class="text-[11px] text-slate-700 font-amiri font-bold">المرحلة الأساسية والثانوية</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-left text-xs text-gold-600 mr-1"></i>
+                        </div>
+
+                        <div onclick="openInstitutionDetails('school', 'مدارس النهضة الحديثة')" class="uni-card mb-2 glass-card-light p-3.5 rounded-2xl shadow-sm hover:border-gold-500 transition-all cursor-pointer active-touch flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center text-xl font-bold shadow-md border border-gold-500/30 shrink-0"><i class="fa-solid fa-chalkboard"></i></div>
+                                <div><h4 class="font-bold text-navy-950 text-xs font-cairo">مدارس النهضة الحديثة</h4><p class="text-[11px] text-slate-700 font-amiri font-bold">الصفوف المتقدمة واللغات</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-left text-xs text-gold-600 mr-1"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- تفاصيل الشاشة الأولى -->
+            <section id="uniDetailsScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="openCoordinationGate()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <h2 id="selectedUniTitle" class="font-kufi text-base font-bold text-navy-900 truncate max-w-[200px]">الجهة الأكاديمية</h2>
+                    <div class="w-10"></div>
+                </div>
+
+                <div class="glass-card-light p-4 rounded-3xl space-y-3 flex-1 overflow-y-auto no-scrollbar font-cairo">
+                    <div class="p-3 rounded-2xl bg-white/80 border border-slate-200">
+                        <h4 class="font-bold text-navy-900 text-xs mb-1" id="instDescTitle">نبذة وشروط القبول العامة:</h4>
+                        <p class="text-[11px] text-slate-700 leading-relaxed" id="instDescText">منشأة تعليمية رائدة توفر بيئة تفاعلية ومؤهلة للطلاب وفق المعايير المعتمدة.</p>
+                    </div>
+                    <h4 class="font-bold text-navy-900 text-xs pt-1" id="subListTitle">الكليات / الأقسام المتاحة:</h4>
+                    <div id="subListContainer" class="space-y-2"></div>
+                </div>
+            </section>
+
+            <!-- تفاصيل الشاشة الثانية -->
+            <section id="facultyDetailsScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="reOpenCurrentInst()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <h2 id="selectedFacultyTitle" class="font-kufi text-xs font-bold text-navy-900 truncate max-w-[200px]">القسم / المرحلة</h2>
+                    <div class="w-10"></div>
+                </div>
+
+                <div class="glass-card-light p-4 rounded-3xl space-y-3 flex-1 overflow-y-auto no-scrollbar font-cairo">
+                    <div class="p-3 rounded-2xl bg-white/80 border border-slate-200">
+                        <h4 class="font-bold text-navy-900 text-xs mb-1" id="facultyDescTitle">عن القسم / المرحلة:</h4>
+                        <p class="text-[11px] text-slate-700 leading-relaxed" id="facultyDescText">إعداد الكوادر والتأهيل الأكاديمي والتربوي المطلوب.</p>
+                    </div>
+                    <h4 class="font-bold text-navy-900 text-xs pt-1" id="deptListTitle">التخصصات / الصفوف المتاحة:</h4>
+                    <div id="deptListContainer" class="space-y-2"></div>
+                </div>
+            </section>
+
+            <!-- تفاصيل الشاشة الثالثة النهائية -->
+            <section id="departmentDetailsScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="reOpenCurrentFaculty()" class="w-10 h-10 bg-navy-900 text-gold-400 flex items-center justify-center rounded-xl active-touch shadow-md shrink-0"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    
+                    <div class="flex-1 text-center px-2 min-w-0">
+                        <h2 id="selectedDeptTitle" class="font-kufi text-xs font-bold text-navy-900 truncate">التخصص / الصف الدراسي</h2>
+                    </div>
+                    
+                    <div class="w-10 shrink-0"></div>
+                </div>
+
+                <div class="glass-card-light p-4 rounded-3xl space-y-4 flex-1 overflow-y-auto no-scrollbar text-center font-cairo">
+                    <div class="p-3.5 rounded-2xl bg-white/90 border border-slate-200 text-right">
+                        <h4 class="font-bold text-navy-900 text-xs mb-1" id="finalDetailTitle">المتطلبات ومجالات العمل:</h4>
+                        <p class="text-[11px] text-slate-700 leading-relaxed" id="finalDetailText">يتطلب اجتياز اختبار القبول والمفاضلة أو استيفاء وثائق النقل والقبول المدرسي المعتمدة.</p>
+                    </div>
+                    <button id="pdfBtn" onclick="alert('فتح الخطة التعليمية / المنهج الدراسي (PDF)')" class="w-full py-3.5 rounded-2xl font-bold text-xs text-navy-900 bg-white border-2 border-navy-900 flex items-center justify-center gap-2 active-touch shadow-sm">
+                        <i class="fa-solid fa-file-pdf text-red-600 text-base"></i>
+                        <span id="pdfBtnText">الخطة التعليمية / المنهج (ملف PDF)</span>
+                    </button>
+                    <button onclick="alert('جاري تحويلك للبوابة الإلكترونية للتنسيق والتقديم المباشر')" class="w-full py-4 rounded-2xl font-bold text-xs text-white bg-gradient-to-tr from-gold-600 to-gold-500 shadow-xl flex items-center justify-center gap-2 active-touch">
+                        <i class="fa-solid fa-paper-plane text-base"></i>
+                        <span id="applyBtnText">التنسيق / التسجيل المباشر (تقديم الطلب الآن)</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- تسجيل طالب -->
+            <section id="studentRegisterScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="backToHome()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <div class="text-center"><h2 class="font-kufi text-base font-bold text-navy-900">تسجيل حساب طالب جديد</h2><p class="text-[10px] text-slate-600 font-bold font-cairo">بوابة التحقق الأكاديمي</p></div>
+                    <div class="w-10"></div>
+                </div>
+
+                <div class="glass-card-light p-4 rounded-3xl space-y-3 flex-1 overflow-y-auto no-scrollbar font-cairo">
+                    <div>
+                        <label class="block text-xs font-bold text-navy-900 mb-1">كود الجهة التعليمية</label>
+                        <select class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950">
+                            <option>جامعة تعز (TAIZ-UNI)</option>
+                            <option>جامعة صنعاء (SANA-UNI)</option>
+                            <option>المعهد الفني والصناعي (TECH-INST)</option>
+                            <option>مدارس المتفوقين النموذجية (SCH-TOP)</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">الرقم الأكاديمي / رقم القيد</label><input type="text" placeholder="202610543" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">كلمة المرور المؤقتة</label><input type="password" placeholder="••••••••" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <button onclick="openNewPasswordScreen()" class="w-full py-3.5 rounded-xl font-bold text-xs text-white glass-button-primary shadow-md active-touch mt-2">تحقق ومتابعة</button>
+                </div>
+            </section>
+
+            <!-- تعيين كلمة المرور -->
+            <section id="newPasswordScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="glass-card-light p-5 rounded-3xl space-y-4 my-auto shadow-xl font-cairo">
+                    <div class="text-center">
+                        <div class="w-14 h-14 mx-auto mb-2 rounded-2xl bg-gold-500 text-navy-950 flex items-center justify-center text-2xl shadow-md"><i class="fa-solid fa-key"></i></div>
+                        <h2 class="font-kufi text-lg font-bold text-navy-900">تعيين كلمة المرور الجديدة</h2>
+                    </div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">كلمة المرور الجديدة</label><input type="password" placeholder="••••••••" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">تأكيد كلمة المرور</label><input type="password" placeholder="••••••••" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <button onclick="goToPortal('student')" class="w-full py-3.5 rounded-xl font-bold text-xs text-white bg-gradient-to-tr from-gold-600 to-gold-500 shadow-md active-touch">حفظ وتأمين الحساب والدخول</button>
+                </div>
+            </section>
+
+            <!-- تسجيل ولي أمر -->
+            <section id="parentRegisterScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="backToHome()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <div class="text-center"><h2 class="font-kufi text-base font-bold text-navy-900">تسجيل ولي أمر</h2></div>
+                    <div class="w-10"></div>
+                </div>
+                <div class="glass-card-light p-4 rounded-3xl space-y-3 flex-1 overflow-y-auto no-scrollbar font-cairo">
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">الاسم الرباعي</label><input type="text" placeholder="محمد الصبري" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">رقم الهاتف (OTP)</label><input type="tel" placeholder="77XXXXXXXX" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">كلمة المرور</label><input type="password" placeholder="••••••••" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <button onclick="goToPortal('parent')" class="w-full py-3.5 rounded-xl font-bold text-xs text-white glass-button-primary shadow-md active-touch mt-2">إرسال رمز التحقق والدخول</button>
+                </div>
+            </section>
+
+            <!-- تسجيل معلم -->
+            <section id="teacherRegisterScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="backToHome()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <div class="text-center"><h2 class="font-kufi text-base font-bold text-navy-900">تسجيل معلم</h2></div>
+                    <div class="w-10"></div>
+                </div>
+                <div class="glass-card-light p-4 rounded-3xl space-y-3 flex-1 overflow-y-auto no-scrollbar font-cairo">
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">الرقم الوظيفي</label><input type="text" placeholder="T-99882" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">كود الاعتماد</label><input type="text" placeholder="CONF-2026" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">كلمة المرور</label><input type="password" placeholder="••••••••" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <button onclick="goToPortal('teacher')" class="w-full py-3.5 rounded-xl font-bold text-xs text-white glass-button-primary shadow-md active-touch mt-2">اعتماد الحساب والدخول</button>
+                </div>
+            </section>
+
+            <!-- تسجيل الدخول المباشر -->
+            <section id="directLoginScreen" class="hidden h-full flex-col space-y-3.5">
+                <div class="flex items-center justify-between glass-card-light p-3 rounded-2xl shadow-sm">
+                    <button onclick="backToHome()" class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center active-touch shadow-md"><i class="fa-solid fa-arrow-right text-base"></i></button>
+                    <div class="text-center"><h2 class="font-kufi text-base font-bold text-navy-900">تسجيل الدخول السابق</h2></div>
+                    <div class="w-10"></div>
+                </div>
+                <div class="glass-card-light p-4 rounded-3xl space-y-3 my-auto shadow-xl font-cairo">
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">الرقم الأكاديمي أو الهاتف</label><input type="text" placeholder="202610543" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <div><label class="block text-xs font-bold text-navy-900 mb-1">كلمة المرور</label><input type="password" placeholder="••••••••" class="w-full py-3 px-3 rounded-xl bg-white/90 border border-slate-300 text-xs font-bold text-navy-950"></div>
+                    <button onclick="goToPortal('student')" class="w-full py-3.5 rounded-xl font-bold text-xs text-white glass-button-primary shadow-md active-touch mt-2">دخول واسترجاع الأدوار</button>
+                </div>
+            </section>
+
+            <!-- بوابة الطالب -->
+            <section id="studentPortal" class="hidden h-full flex-col space-y-3 font-cairo">
+                <div class="glass-card-light p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-11 h-11 rounded-2xl bg-navy-900 text-gold-400 flex items-center justify-center text-lg font-bold shadow-md border border-gold-500/40 shrink-0"><i class="fa-solid fa-user-graduate"></i></div>
+                        <div><h3 class="font-bold text-navy-950 text-xs">عبدالرحمن الصبري</h3><p class="text-[10px] text-slate-600 font-bold">جامعة تعز - أمن سيبراني</p></div>
+                    </div>
+                    <button onclick="openSettingsModal()" class="w-9 h-9 rounded-xl bg-navy-900/10 text-navy-900 flex items-center justify-center active-touch"><i class="fa-solid fa-gear text-base"></i></button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div onclick="alert('سجل الدرجات')" class="glass-card-light p-3 rounded-2xl text-center active-touch cursor-pointer"><div class="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></div><h4 class="font-bold text-navy-950 text-[11px]">الدرجات</h4></div>
+                    <div onclick="alert('سجل الحضور')" class="glass-card-light p-3 rounded-2xl text-center active-touch cursor-pointer"><div class="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center"><i class="fa-solid fa-calendar-check"></i></div><h4 class="font-bold text-navy-950 text-[11px]">الحضور</h4></div>
+                    <div onclick="alert('الواجبات')" class="glass-card-light p-3 rounded-2xl text-center active-touch cursor-pointer"><div class="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center"><i class="fa-solid fa-book-open"></i></div><h4 class="font-bold text-navy-950 text-[11px]">الواجبات</h4></div>
+                </div>
+                <div class="flex-1 overflow-y-auto space-y-2 no-scrollbar">
+                    <div class="glass-card-light rounded-2xl overflow-hidden shadow-sm">
+                        <div onclick="toggleAccordion('servicesDropdown')" class="p-3 flex items-center justify-between cursor-pointer"><span class="font-bold text-navy-900 text-xs">خدمات الطالب (المالية والسجل)</span><i class="fa-solid fa-chevron-down text-xs text-gold-600"></i></div>
+                        <div id="servicesDropdown" class="hidden p-3 bg-white/50 border-t border-slate-200 space-y-2 text-xs">
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-white shadow-sm"><span class="font-bold">البيانات المالية</span><span class="text-[10px] text-green-700 font-bold">مسدد</span></div>
+                        </div>
+                    </div>
+                    <div onclick="openRoleModal()" class="glass-card-light p-3 rounded-2xl flex items-center justify-between cursor-pointer"><span class="font-bold text-navy-900 text-xs">إضافة جهة أكاديمية أخرى</span><i class="fa-solid fa-plus text-xs text-navy-900"></i></div>
+                    <div onclick="openTokenModal()" class="glass-card-light p-3 rounded-2xl flex items-center justify-between cursor-pointer"><span class="font-bold text-navy-900 text-xs">أولياء الأمور المرتبطون (Token)</span><span class="text-[10px] bg-gold-500/25 text-gold-700 px-2 py-0.5 rounded-full font-bold">1 مرتبط</span></div>
+                    <div class="pt-2">
+                        <p class="text-[10px] font-bold text-slate-600 mb-1.5">الأدوار المضافة الأخرى:</p>
+                        <div onclick="switchRole('teacher')" class="glass-bar-gold p-3 rounded-2xl flex items-center justify-between cursor-pointer">
+                            <span class="font-bold text-navy-950 text-xs">معلم - المعهد الكندي</span>
+                            <span class="text-[10px] bg-navy-900 text-gold-400 px-2 py-0.5 rounded-full font-bold">تبديل</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- بوابة ولي الأمر -->
+            <section id="parentPortal" class="hidden h-full flex-col space-y-3 font-cairo">
+                <div class="glass-card-light p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-11 h-11 rounded-2xl bg-navy-900 text-gold-400 flex items-center justify-center text-lg font-bold shadow-md"><i class="fa-solid fa-users-rectangle"></i></div>
+                        <div><h3 class="font-bold text-navy-950 text-xs">محمد الصبري</h3><p class="text-[10px] text-slate-600 font-bold">حساب ولي أمر</p></div>
+                    </div>
+                    <button onclick="openSettingsModal()" class="w-9 h-9 rounded-xl bg-navy-900/10 text-navy-900 flex items-center justify-center"><i class="fa-solid fa-gear text-base"></i></button>
+                </div>
+                <div class="glass-card-light p-3.5 rounded-2xl shadow-sm space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-navy-900 text-xs">الأبناء المتابعون:</h4>
+                        <button onclick="openAddSonModal()" class="px-2.5 py-1 rounded-xl bg-navy-900 text-gold-400 text-[10px] font-bold flex items-center gap-1"><i class="fa-solid fa-plus"></i> إضافة</button>
+                    </div>
+                    <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+                        <div onclick="openSonInstitutions('عبدالرحمن')" class="text-center cursor-pointer shrink-0">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-gold-500 p-0.5"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" class="w-full h-full rounded-full object-cover"></div>
+                            <span class="block text-[11px] font-bold text-navy-950 mt-1">عبدالرحمن</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- بوابة المعلم -->
+            <section id="teacherPortal" class="hidden h-full flex-col space-y-3 font-cairo">
+                <div class="glass-card-light p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-11 h-11 rounded-2xl bg-navy-900 text-gold-400 flex items-center justify-center text-lg font-bold shadow-md"><i class="fa-solid fa-chalkboard-user"></i></div>
+                        <div><h3 class="font-bold text-navy-950 text-xs">أ.د. عبدالرحمن الصبري</h3><p class="text-[10px] text-slate-600 font-bold">هيئة التدريس</p></div>
+                    </div>
+                    <button onclick="openSettingsModal()" class="w-9 h-9 rounded-xl bg-navy-900/10 text-navy-900 flex items-center justify-center"><i class="fa-solid fa-gear text-base"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div onclick="alert('رصد الدرجات')" class="glass-card-light p-3.5 rounded-2xl text-center cursor-pointer"><i class="fa-solid fa-pen-to-square text-xl text-navy-900 mb-1"></i><h4 class="font-bold text-navy-950 text-xs">رصد الدرجات</h4></div>
+                    <div onclick="alert('تحضير الحضور')" class="glass-card-light p-3.5 rounded-2xl text-center cursor-pointer"><i class="fa-solid fa-clipboard-user text-xl text-navy-900 mb-1"></i><h4 class="font-bold text-navy-950 text-xs">تحضير الطلاب</h4></div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- الترويسة السفلية -->
+        <footer class="glass-header px-4 py-2 text-center shrink-0 border-t border-gold-500/30 font-cairo">
+            <p class="text-[11px] font-bold text-navy-900">تطبيق الامتياز © 2026 - نظام التنسيق الأكاديمي الموحد</p>
+        </footer>
+    </div>
+
+    <!-- القائمة الجانبية المنبثقة من اليمين -->
+    <div id="sideMenuModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden justify-end transition-opacity">
+        <div id="sideMenuContent" class="glass-card-light w-4/5 max-w-xs h-full p-5 flex flex-col justify-between transform translate-x-full transition-transform duration-300 shadow-2xl font-cairo">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-gold-600 to-amber-300 text-navy-950 flex items-center justify-center font-bold shadow-sm">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <h3 class="font-kufi text-lg font-bold text-navy-900">تطبيق الامتياز</h3>
+                    </div>
+                    <button onclick="closeSideMenu()" class="w-8 h-8 rounded-full bg-slate-200 text-navy-900 flex items-center justify-center font-bold active-touch">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <nav class="space-y-1.5 text-xs font-bold text-navy-900">
+                    <div onclick="closeSideMenu(); backToHome();" class="p-3 rounded-2xl hover:bg-navy-900 hover:text-white flex items-center gap-3 cursor-pointer transition-all active-touch">
+                        <i class="fa-solid fa-house text-base text-gold-600"></i>
+                        <span>الرئيسية (بيت)</span>
+                    </div>
+
+                    <div onclick="closeSideMenu(); openCoordinationGate();" class="p-3 rounded-2xl hover:bg-navy-900 hover:text-white flex items-center gap-3 cursor-pointer transition-all active-touch">
+                        <i class="fa-solid fa-compass text-base text-gold-600"></i>
+                        <span>بوابة التنسيق الموحد</span>
+                    </div>
+
+                    <div onclick="closeSideMenu(); openRoleModal();" class="p-3 rounded-2xl hover:bg-navy-900 hover:text-white flex items-center gap-3 cursor-pointer transition-all active-touch">
+                        <i class="fa-solid fa-user-plus text-base text-gold-600"></i>
+                        <span>إنشاء حساب جديد</span>
+                    </div>
+
+                    <div onclick="closeSideMenu(); openLoginDirect();" class="p-3 rounded-2xl hover:bg-navy-900 hover:text-white flex items-center gap-3 cursor-pointer transition-all active-touch">
+                        <i class="fa-solid fa-right-to-bracket text-base text-gold-600"></i>
+                        <span>تسجيل الدخول</span>
+                    </div>
+
+                    <div onclick="closeSideMenu(); openAboutModal();" class="p-3 rounded-2xl hover:bg-navy-900 hover:text-white flex items-center gap-3 cursor-pointer transition-all active-touch bg-gold-500/10 border border-gold-500/30">
+                        <i class="fa-solid fa-circle-info text-base text-gold-600"></i>
+                        <span>عن التطبيق والموقع (من نحن)</span>
+                    </div>
+
+                    <div onclick="alert('رقم خدمة العملاء والدعم الفني: 770000000')" class="p-3 rounded-2xl hover:bg-navy-900 hover:text-white flex items-center gap-3 cursor-pointer transition-all active-touch">
+                        <i class="fa-solid fa-headset text-base text-gold-600"></i>
+                        <span>تواصل معنا والدعم الفني</span>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="pt-4 border-t border-slate-200 text-center">
+                <p class="text-[10px] text-slate-600 font-bold">تطبيق الامتياز © 2026</p>
+                <p class="text-[9px] text-gold-700 font-bold mt-0.5">المنصة اليمنية الأكاديمية الموحدة</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة "عن التطبيق والموقع" -->
+    <div id="aboutModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card-light w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 font-cairo">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-gold-600 text-xl"></i>
+                    <h3 class="font-kufi text-base font-bold text-navy-900">عن منصة وتطبيق الامتياز</h3>
+                </div>
+                <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-200 text-navy-900 flex items-center justify-center font-bold active-touch"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="text-xs text-slate-700 leading-relaxed space-y-2 max-h-72 overflow-y-auto no-scrollbar p-1">
+                <p class="font-bold text-navy-900">«تطبيق الامتياز» هو النظام الأكاديمي والتعليمي الموحد للأجهزة الذكية في الجمهورية اليمنية.</p>
+                <p>يهدف التطبيق للربط الرقمي الشامل بين الطلاب، أولياء الأمور، وأعضاء هيئة التدريس والمعلمين مع كافة الجامعات، الكليات، المعاهد التقنية، والمدارس النموذجية.</p>
+                
+                <h4 class="font-bold text-navy-900 pt-1">أبرز الأهداف والخدمات:</h4>
+                <ul class="list-disc list-inside text-[11px] space-y-1 font-semibold text-slate-800">
+                    <li>بوابة تنسيق ومفاضلة موحدة ومباشرة.</li>
+                    <li>متابعة ولي الأمر لجميع أبنائه بمختلف المؤسسات.</li>
+                    <li>سجل إلكتروني معتمد للدرجات والحضور والواجبات.</li>
+                </ul>
+            </div>
+
+            <button onclick="document.getElementById('aboutModal').classList.add('hidden')" class="w-full py-3 rounded-xl font-bold text-xs text-white glass-button-primary shadow-md active-touch">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- باقي النوافذ المنبثقة -->
+    <div id="roleModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-end justify-center transition-opacity">
+        <div class="glass-card-light w-full max-w-md rounded-t-3xl p-5 shadow-2xl space-y-3 transform translate-y-full transition-transform duration-300 font-cairo" id="roleModalContent">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                <h3 class="font-kufi text-base font-bold text-navy-900">اختر صفة الحساب (الدور)</h3>
+                <button onclick="closeRoleModal()" class="w-8 h-8 rounded-full bg-slate-200 text-navy-900 flex items-center justify-center font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-2.5 pt-1">
+                <div onclick="selectRole('student')" class="p-3 rounded-2xl bg-white/90 border border-slate-200 cursor-pointer flex items-center gap-3.5 shadow-sm"><div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center"><i class="fa-solid fa-user-graduate"></i></div><div><h4 class="font-bold text-navy-950 text-xs">طالب</h4><p class="text-[11px] text-slate-600">الدرجات والحضور والتنسيق</p></div></div>
+                <div onclick="selectRole('parent')" class="p-3 rounded-2xl bg-white/90 border border-slate-200 cursor-pointer flex items-center gap-3.5 shadow-sm"><div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center"><i class="fa-solid fa-users-rectangle"></i></div><div><h4 class="font-bold text-navy-950 text-xs">ولي أمر</h4><p class="text-[11px] text-slate-600">متابعة سجلات الأبناء</p></div></div>
+                <div onclick="selectRole('teacher')" class="p-3 rounded-2xl bg-white/90 border border-slate-200 cursor-pointer flex items-center gap-3.5 shadow-sm"><div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center"><i class="fa-solid fa-chalkboard-user"></i></div><div><h4 class="font-bold text-navy-950 text-xs">معلم / أستاذ</h4><p class="text-[11px] text-slate-600">إدارة المقررات</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card-light w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 font-cairo">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                <h3 class="font-kufi text-base font-bold text-navy-900">إعدادات الحساب</h3>
+                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-200 text-navy-900 flex items-center justify-center font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-2 text-xs">
+                <div><label class="block font-bold text-navy-900 mb-1">البريد الإلكتروني</label><input type="email" value="al-somari@alemtiaz.edu.ye" class="w-full p-2.5 rounded-xl border border-slate-300"></div>
+                <div><label class="block font-bold text-navy-900 mb-1">رقم الهاتف</label><input type="tel" value="770000000" class="w-full p-2.5 rounded-xl border border-slate-300"></div>
+            </div>
+            <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="w-full py-3 rounded-xl font-bold text-xs text-white glass-button-primary shadow-md">حفظ التغييرات</button>
+        </div>
+    </div>
+
+    <div id="tokenModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card-light w-full max-w-sm rounded-3xl p-5 shadow-2xl text-center space-y-3 font-cairo">
+            <h3 class="font-kufi text-base font-bold text-navy-900">رمز ربط ولي الأمر (Token)</h3>
+            <div class="py-3 px-4 rounded-2xl bg-navy-900 text-gold-400 font-extrabold text-xl tracking-widest border border-gold-500/50">EMT-8890-2026</div>
+            <button onclick="document.getElementById('tokenModal').classList.add('hidden')" class="w-full py-2.5 rounded-xl font-bold text-xs text-white bg-navy-900">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="sonInstModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card-light w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 font-cairo">
+            <h3 id="sonInstTitle" class="font-kufi text-base font-bold text-navy-900 text-center">الجهات المقيد بها الابن</h3>
+            <div class="space-y-2">
+                <div class="p-3 rounded-2xl bg-white border border-slate-200 flex items-center gap-3"><i class="fa-solid fa-university text-navy-900 text-lg"></i><div><h5 class="font-bold text-navy-950 text-xs">جامعة تعز</h5><p class="text-[10px] text-slate-600">كلية الهندسة</p></div></div>
+            </div>
+            <button onclick="document.getElementById('sonInstModal').classList.add('hidden')" class="w-full py-2.5 rounded-xl font-bold text-xs text-navy-950 bg-slate-200">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- JavaScript البرمجي للتحكم بالأنظمة المخصصة (جامعات / معاهد / مدارس) -->
+    <script>
+        const bgContainer = document.getElementById('bgContainer');
+        const homeScreen = document.getElementById('homeScreen');
+        const searchScreen = document.getElementById('searchScreen');
+        const uniDetailsScreen = document.getElementById('uniDetailsScreen');
+        const facultyDetailsScreen = document.getElementById('facultyDetailsScreen');
+        const departmentDetailsScreen = document.getElementById('departmentDetailsScreen');
+        const studentRegisterScreen = document.getElementById('studentRegisterScreen');
+        const newPasswordScreen = document.getElementById('newPasswordScreen');
+        const parentRegisterScreen = document.getElementById('parentRegisterScreen');
+        const teacherRegisterScreen = document.getElementById('teacherRegisterScreen');
+        const directLoginScreen = document.getElementById('directLoginScreen');
+        const studentPortal = document.getElementById('studentPortal');
+        const parentPortal = document.getElementById('parentPortal');
+        const teacherPortal = document.getElementById('teacherPortal');
+        
+        const roleModal = document.getElementById('roleModal');
+        const roleModalContent = document.getElementById('roleModalContent');
+
+        const sideMenuModal = document.getElementById('sideMenuModal');
+        const sideMenuContent = document.getElementById('sideMenuContent');
+
+        let currentCategoryType = 'university';
+        let currentInstName = '';
+        let currentFacultyName = '';
+
+        const academicData = {
+            university: {
+                descTitle: "نبذة وشروط القبول الجامعي:",
+                descText: "منشأة تعليم عالي توفر برامج البكالوريوس والدراسات العليا وفق معدلات الثانوية ونظام المفاضلة.",
+                subTitle: "الكليات المتاحة للقبول:",
+                items: [
+                    { name: "كلية الهندسة وتقنية المعلومات", icon: "fa-laptop-code", sub: "أمن سيبراني، حاسوب، مدني" },
+                    { name: "كلية الطب والعلوم الصحية", icon: "fa-user-doctor", sub: "طب بشري، جراحة، مختبرات" },
+                    { name: "كلية العلوم الإدارية", icon: "fa-chart-pie", sub: "محاسبة، إدارة أعمال، تسويق" }
+                ],
+                faculties: {
+                    "كلية الهندسة وتقنية المعلومات": {
+                        desc: "تهدف الكلية لإعداد مهندسين متميزين في التكنولوجيا الحديثة مع معامل متطورة.",
+                        title: "أقسام وتخصصات الكلية:",
+                        depts: [
+                            { name: "قسم الأمن السيبراني والشبكات", sub: "بكالوريوس 4 سنوات" },
+                            { name: "قسم علوم الحاسوب والذكاء الاصطناعي", sub: "بكالوريوس 4 سنوات" },
+                            { name: "قسم الهندسة المدنية والمعمارية", sub: "بكالوريوس 5 سنوات" }
+                        ]
+                    },
+                    "كلية الطب والعلوم الصحية": {
+                        desc: "كلية طبية متميزة توفر مستشفيات تعليمية وتدريباً سريرياً مكثفاً.",
+                        title: "أقسام الكلية الطبية:",
+                        depts: [
+                            { name: "قسم الطب والجراحة العامة", sub: "بكالوريوس 6 سنوات" },
+                            { name: "قسم المختبرات والعلوم الطبية", sub: "بكالوريوس 4 سنوات" }
+                        ]
+                    }
+                },
+                final: {
+                    title: "متطلبات المفاضلة والقبول الجامعي:",
+                    text: "تتطلب الكلية شهادة الثانوية العامة بمعدل لا يقل عن 80% واجتياز اختبار المفاضلة الإلكتروني.",
+                    pdfText: "الخطة التعليمية والأكاديمية للقسم (PDF)",
+                    applyText: "التنسيق المباشر (تقديم طلب القبول الجامعي)"
+                }
+            },
+            institute: {
+                descTitle: "نبذة عن المعهد والاعتماد التقني:",
+                descText: "مؤسسة تعليمية تقنية تهتم بالتأهيل المهني والتطبيقي والمهارات الفنية المباشرة لسوق العمل.",
+                subTitle: "الأقسام الفنية والدبلومات:",
+                items: [
+                    { name: "قسم التكنولوجيا والبرمجيات الفنية", icon: "fa-microchip", sub: "دبلوم سنتين / ثلاث سنوات" },
+                    { name: "قسم اللغات الحية والترجمة التطبيقية", icon: "fa-language", sub: "دبلوم عالي مكثف" },
+                    { name: "قسم الميكانيكا والكهرباء الصناعية", icon: "fa-gears", sub: "دبلوم تقني صناعي" }
+                ],
+                faculties: {
+                    "قسم التكنولوجيا والبرمجيات الفنية": {
+                        desc: "تأهيل تقني عملي مكثف يركز على التطبيق الفعلي والورش البرمجية.",
+                        title: "تخصصات الدبلوم التقني:",
+                        depts: [
+                            { name: "دبلوم صيانة الشبكات والأنظمة", sub: "دبلوم فني سنتين" },
+                            { name: "دبلوم تطوير تطبيقات الجوال", sub: "دبلوم تقني 3 سنوات" }
+                        ]
+                    },
+                    "قسم اللغات الحية والترجمة التطبيقية": {
+                        desc: "برامج تعليم لغات مكثفة معتمدة دولياً ومجهزة بمختبرات صوتية حديثة.",
+                        title: "برامج الدبلوم المتاحة:",
+                        depts: [
+                            { name: "دبلوم اللغة الإنجليزية المتقدم والتوفل", sub: "سنة دراسية" },
+                            { name: "دبلوم الترجمة الفورية والترجمة التجارية", sub: "سنتين" }
+                        ]
+                    }
+                },
+                final: {
+                    title: "شروط القبول ودراسة الدبلوم:",
+                    text: "القبول متاح للحاصلين على الثانوية العامة أو ما يعادلها. يمنح المعهد شهادة دبلوم فني/تقني معتمد.",
+                    pdfText: "دليل المقررات والورش الفنية (PDF)",
+                    applyText: "التسجيل المباشر والالتحاق بالمعهد"
+                }
+            },
+            school: {
+                descTitle: "نبذة عن المدرسة والتعليم العام:",
+                descText: "صرح تربوي تعليمي يهتم بالتربية الحديثة، والأنشطة الإبداعية، وبناء المهارات القيادية للطلاب.",
+                subTitle: "المراحل الدراسية في المدرسة:",
+                items: [
+                    { name: "المرحلة الأساسية (الصفوف 1 - 9)", icon: "fa-children", sub: "من الصف الأول حتى التاسع" },
+                    { name: "المرحلة الثانوية (الصفوف 10 - 12)", icon: "fa-graduation-cap", sub: "أول ثانوي إلى ثالث ثانوي" }
+                ],
+                faculties: {
+                    "المرحلة الأساسية (الصفوف 1 - 9)": {
+                        desc: "تأسيس تعليمي شامل يركز على العلوم، اللغات، القيم التربوية، والأنشطة.",
+                        title: "الصفوف الدراسية المتاحة:",
+                        depts: [
+                            { name: "الصفوف الأولى (1 - 3 أساسي)", sub: "تأسيس القراءة والعلوم" },
+                            { name: "الصفوف المتوسطة (4 - 6 أساسي)", sub: "منهج مطور ولغات" },
+                            { name: "الصفوف المتقدمة (7 - 9 أساسي)", sub: "إعداد للاختبارات الوزارية" }
+                        ]
+                    },
+                    "المرحلة الثانوية (الصفوف 10 - 12)": {
+                        desc: "تأهيل علمي وأدبي رفيع لإعداد الطلاب للقبول والتفوق في الجامعات.",
+                        title: "المراحل الثانوية:",
+                        depts: [
+                            { name: "الصف الأول الثانوي (10)", sub: "جذع مشترك" },
+                            { name: "الصف الثاني الثانوي (11 - علمي / أدبي)", sub: "تخصصي" },
+                            { name: "الصف الثالث الثانوي (12 - شهادة وزارية)", sub: "المرحلة النهائية والتأهيل الجامعي" }
+                        ]
+                    }
+                },
+                final: {
+                    title: "متطلبات التسجيل والنقل المدرسي:",
+                    text: "يتطلب التسجيل إحضار ملف الطالب، شهادة نتيجته للعام السابق، وصور وثائق ولي الأمر.",
+                    pdfText: "جدول المناهج والأنشطة المدرسية (PDF)",
+                    applyText: "حجز مقعد والتسجيل المدرسي المباشر"
+                }
+            }
+        };
+
+        function openSideMenu() {
+            sideMenuModal.classList.remove('hidden'); sideMenuModal.classList.add('flex');
+            setTimeout(() => { sideMenuContent.classList.remove('translate-x-full'); }, 10);
+        }
+
+        function closeSideMenu() {
+            sideMenuContent.classList.add('translate-x-full');
+            setTimeout(() => { sideMenuModal.classList.remove('flex'); sideMenuModal.classList.add('hidden'); }, 250);
+        }
+
+        function openAboutModal() { document.getElementById('aboutModal').classList.remove('hidden'); }
+
+        function hideAllScreens() {
+            [homeScreen, searchScreen, uniDetailsScreen, facultyDetailsScreen, departmentDetailsScreen, 
+             studentRegisterScreen, newPasswordScreen, parentRegisterScreen, teacherRegisterScreen, 
+             directLoginScreen, studentPortal, parentPortal, teacherPortal].forEach(s => {
+                if(s) { s.classList.add('hidden'); s.classList.remove('flex'); }
+            });
+        }
+
+        function backToHome() {
+            hideAllScreens();
+            homeScreen.classList.remove('hidden'); homeScreen.classList.add('flex');
+            bgContainer.className = 'bg-home';
+        }
+
+        function openCoordinationGate() {
+            hideAllScreens();
+            searchScreen.classList.remove('hidden'); searchScreen.classList.add('flex');
+            bgContainer.className = 'bg-search';
+        }
+
+        function closeCoordinationGate() { backToHome(); }
+
+        function switchCategoryTab(category) {
+            ['universities', 'institutes', 'schools'].forEach(cat => {
+                const tab = document.getElementById(`tab-${cat}`);
+                const group = document.getElementById(`group-${cat}`);
+                if (cat === category) {
+                    tab.className = "py-2 rounded-xl bg-navy-900 text-gold-400 shadow-sm transition-all active-touch";
+                    group.classList.remove('hidden');
+                } else {
+                    tab.className = "py-2 rounded-xl text-navy-900 hover:bg-white/50 transition-all active-touch";
+                    group.classList.add('hidden');
+                }
+            });
+            document.getElementById('searchInput').value = '';
+            filterUniversities();
+        }
+
+        function openInstitutionDetails(type, name) {
+            currentCategoryType = type;
+            currentInstName = name;
+            hideAllScreens();
+
+            const data = academicData[type];
+            document.getElementById('selectedUniTitle').innerText = name;
+            document.getElementById('instDescTitle').innerText = data.descTitle;
+            document.getElementById('instDescText').innerText = data.descText;
+            document.getElementById('subListTitle').innerText = data.subTitle;
+
+            const container = document.getElementById('subListContainer');
+            container.innerHTML = '';
+
+            data.items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "p-3.5 rounded-2xl bg-white border border-slate-200 flex items-center justify-between cursor-pointer active-touch shadow-sm hover:border-gold-500 transition-all font-cairo";
+                card.onclick = () => openFacultyDetails(item.name);
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${item.icon} text-navy-900 text-lg"></i>
+                        <div>
+                            <h5 class="font-bold text-navy-950 text-xs">${item.name}</h5>
+                            <p class="text-[10px] text-slate-600">${item.sub}</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-xs text-gold-600"></i>
+                `;
+                container.appendChild(card);
+            });
+
+            uniDetailsScreen.classList.remove('hidden'); uniDetailsScreen.classList.add('flex');
+        }
+
+        function reOpenCurrentInst() {
+            openInstitutionDetails(currentCategoryType, currentInstName);
+        }
+
+        function openFacultyDetails(facName) {
+            currentFacultyName = facName;
+            hideAllScreens();
+
+            const data = academicData[currentCategoryType];
+            const facData = (data.faculties && data.faculties[facName]) ? data.faculties[facName] : {
+                desc: "تأهيل تربوي وأكاديمي متميز لجميع الطلاب.",
+                title: "الأقسام المتاحة:",
+                depts: [
+                    { name: "القسم الرئيسي المعتمد", sub: "مؤهل رسمي" },
+                    { name: "القسم التخصصي التطبيقي", sub: "برنامج مكثف" }
+                ]
+            };
+
+            document.getElementById('selectedFacultyTitle').innerText = facName;
+            document.getElementById('facultyDescTitle').innerText = currentCategoryType === 'school' ? "عن المرحلة الدراسية:" : "عن الكلية / الفرع:";
+            document.getElementById('facultyDescText').innerText = facData.desc;
+            document.getElementById('deptListTitle').innerText = facData.title;
+
+            const container = document.getElementById('deptListContainer');
+            container.innerHTML = '';
+
+            facData.depts.forEach(dept => {
+                const card = document.createElement('div');
+                card.className = "p-3.5 rounded-2xl bg-white border border-slate-200 flex items-center justify-between cursor-pointer active-touch shadow-sm hover:border-gold-500 transition-all font-cairo";
+                card.onclick = () => openDepartmentDetails(dept.name);
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${currentCategoryType === 'school' ? 'fa-book-bookmark' : 'fa-graduation-cap'} text-navy-900 text-lg"></i>
+                        <div>
+                            <h5 class="font-bold text-navy-950 text-xs">${dept.name}</h5>
+                            <p class="text-[10px] text-slate-600">${dept.sub}</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-xs text-gold-600"></i>
+                `;
+                container.appendChild(card);
+            });
+
+            facultyDetailsScreen.classList.remove('hidden'); facultyDetailsScreen.classList.add('flex');
+        }
+
+        function reOpenCurrentFaculty() {
+            openFacultyDetails(currentFacultyName);
+        }
+
+        function openDepartmentDetails(deptName) {
+            hideAllScreens();
+
+            const data = academicData[currentCategoryType];
+            document.getElementById('selectedDeptTitle').innerText = deptName;
+            document.getElementById('finalDetailTitle').innerText = data.final.title;
+            document.getElementById('finalDetailText').innerText = data.final.text;
+            document.getElementById('pdfBtnText').innerText = data.final.pdfText;
+            document.getElementById('applyBtnText').innerText = data.final.applyText;
+
+            departmentDetailsScreen.classList.remove('hidden'); departmentDetailsScreen.classList.add('flex');
+        }
+
+        function openRoleModal() {
+            roleModal.classList.remove('hidden'); roleModal.classList.add('flex');
+            setTimeout(() => roleModalContent.classList.remove('translate-y-full'), 10);
+        }
+
+        function closeRoleModal() {
+            roleModalContent.classList.add('translate-y-full');
+            setTimeout(() => { roleModal.classList.remove('flex'); roleModal.classList.add('hidden'); }, 250);
+        }
+
+        function selectRole(role) {
+            closeRoleModal();
+            hideAllScreens();
+            bgContainer.className = 'bg-register';
+            if (role === 'student') { studentRegisterScreen.classList.remove('hidden'); studentRegisterScreen.classList.add('flex'); }
+            else if (role === 'parent') { parentRegisterScreen.classList.remove('hidden'); parentRegisterScreen.classList.add('flex'); }
+            else if (role === 'teacher') { teacherRegisterScreen.classList.remove('hidden'); teacherRegisterScreen.classList.add('flex'); }
+        }
+
+        function openNewPasswordScreen() {
+            hideAllScreens();
+            newPasswordScreen.classList.remove('hidden'); newPasswordScreen.classList.add('flex');
+        }
+
+        function goToPortal(role) {
+            hideAllScreens();
+            bgContainer.className = 'bg-portal';
+            if (role === 'student') { studentPortal.classList.remove('hidden'); studentPortal.classList.add('flex'); }
+            else if (role === 'parent') { parentPortal.classList.remove('hidden'); parentPortal.classList.add('flex'); }
+            else if (role === 'teacher') { teacherPortal.classList.remove('hidden'); teacherPortal.classList.add('flex'); }
+        }
+
+        function openLoginDirect() {
+            hideAllScreens();
+            directLoginScreen.classList.remove('hidden'); directLoginScreen.classList.add('flex');
+            bgContainer.className = 'bg-register';
+        }
+
+        function switchRole(role) { goToPortal(role); }
+
+        function toggleAccordion(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        function openTokenModal() { document.getElementById('tokenModal').classList.remove('hidden'); }
+
+        function openSonInstitutions(name) {
+            document.getElementById('sonInstTitle').innerText = 'المؤسسات المقيد بها الابن: ' + name;
+            document.getElementById('sonInstModal').classList.remove('hidden');
+        }
+
+        function openAddSonModal() { alert('شاشة إضافة طالب لولي الأمر'); }
+
+        function filterUniversities() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.getElementsByClassName('uni-card');
+            for (let i = 0; i < cards.length; i++) {
+                cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "flex" : "none";
+            }
+        }
+    </script>
+</body>
+</html>
